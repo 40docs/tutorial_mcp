@@ -15,13 +15,13 @@ const C = COMPONENT_IDS;
 // ============================================================================
 
 const COMP_RECTS = {
-  [C.HOST]:         { x: 30,  y: 20,  w: 560, h: 310, rx: 16 },
-  [C.MODEL]:        { x: 185, y: 48,  w: 250, h: 68,  rx: 10 },
-  [C.CLIENT_1]:     { x: 60,  y: 180, w: 210, h: 90,  rx: 10 },
-  [C.CLIENT_2]:     { x: 350, y: 180, w: 210, h: 90,  rx: 10 },
-  [C.API]:          { x: 700, y: 35,  w: 225, h: 100, rx: 14 },
-  [C.SERVER_FILES]: { x: 55,  y: 398, w: 230, h: 130, rx: 10 },
-  [C.SERVER_UTILS]: { x: 340, y: 398, w: 230, h: 130, rx: 10 },
+  [C.API]:          { x: 20,  y: 150, w: 150, h: 110, rx: 14 },
+  [C.HOST]:         { x: 205, y: 30,  w: 460, h: 360, rx: 16 },
+  [C.MODEL]:        { x: 225, y: 150, w: 160, h: 80,  rx: 10 },
+  [C.CLIENT_1]:     { x: 430, y: 65,  w: 190, h: 110, rx: 10 },
+  [C.CLIENT_2]:     { x: 430, y: 220, w: 190, h: 110, rx: 10 },
+  [C.SERVER_FILES]: { x: 730, y: 45,  w: 235, h: 150, rx: 10 },
+  [C.SERVER_UTILS]: { x: 730, y: 230, w: 235, h: 150, rx: 10 },
 };
 
 const COMP_META = {
@@ -36,25 +36,25 @@ const COMP_META = {
 
 // Static connection lines (always drawn between components)
 const STATIC_LINES = [
-  { id: 'host-api', p1: [590, 85],  p2: [700, 85],  ck: 'api',       c1: C.HOST,     c2: C.API },
-  { id: 'c1-s1',    p1: [165, 270], p2: [170, 398], ck: 'transport', c1: C.CLIENT_1, c2: C.SERVER_FILES },
-  { id: 'c2-s2',    p1: [455, 270], p2: [455, 398], ck: 'transport', c1: C.CLIENT_2, c2: C.SERVER_UTILS },
-  { id: 'int-c1',   p1: [250, 130], p2: [165, 180], ck: 'host',      c1: C.HOST,     c2: C.CLIENT_1, dashed: true },
-  { id: 'int-c2',   p1: [370, 130], p2: [455, 180], ck: 'host',      c1: C.HOST,     c2: C.CLIENT_2, dashed: true },
+  { id: 'host-api', p1: [205, 205], p2: [170, 205], ck: 'api',       c1: C.HOST,     c2: C.API },
+  { id: 'c1-s1',    p1: [620, 120], p2: [730, 120], ck: 'transport', c1: C.CLIENT_1, c2: C.SERVER_FILES },
+  { id: 'c2-s2',    p1: [620, 275], p2: [730, 275], ck: 'transport', c1: C.CLIENT_2, c2: C.SERVER_UTILS },
+  { id: 'int-c1',   p1: [385, 190], p2: [430, 120], ck: 'host',      c1: C.MODEL,    c2: C.CLIENT_1, dashed: true },
+  { id: 'int-c2',   p1: [385, 190], p2: [430, 275], ck: 'host',      c1: C.MODEL,    c2: C.CLIENT_2, dashed: true },
 ];
 
 // Motion paths for animated message flow (keyed by "from->to")
 const FLOW_PATHS = {
-  'host->anthropic-api':         'M 590 85 L 700 85',
-  'anthropic-api->host':         'M 700 85 L 590 85',
-  'host->client-files':          'M 250 130 L 165 180',
-  'host->client-utils':          'M 370 130 L 455 180',
-  'client-files->server-files':  'M 165 270 L 170 398',
-  'server-files->client-files':  'M 170 398 L 165 270',
-  'client-utils->server-utils':  'M 455 270 L 455 398',
-  'server-utils->client-utils':  'M 455 398 L 455 270',
-  'server-files->host':          'M 170 398 L 165 270 L 310 130',
-  'server-utils->host':          'M 455 398 L 455 270 L 310 130',
+  'host->anthropic-api':         'M 205 205 L 170 205',
+  'anthropic-api->host':         'M 170 205 L 205 205',
+  'host->client-files':          'M 385 190 L 430 120',
+  'host->client-utils':          'M 385 190 L 430 275',
+  'client-files->server-files':  'M 620 120 L 730 120',
+  'server-files->client-files':  'M 730 120 L 620 120',
+  'client-utils->server-utils':  'M 620 275 L 730 275',
+  'server-utils->client-utils':  'M 730 275 L 620 275',
+  'server-files->host':          'M 730 120 L 620 120 L 430 120 L 385 190',
+  'server-utils->host':          'M 730 275 L 620 275 L 430 275 L 385 190',
 };
 
 // Message flow type to packet color
@@ -95,7 +95,7 @@ function isVisible(id, cs) {
   // During boot — derive from component states
   switch (id) {
     case C.HOST:         return true;
-    case C.MODEL:        return cs.hostState !== 'parsing_config';
+    case C.MODEL:        return cs.toolRegistryComplete;
     case C.CLIENT_1:     return cs.client1State !== 'none';
     case C.CLIENT_2:     return cs.client2State !== 'none';
     case C.SERVER_FILES: return cs.server1State !== 'disconnected';
@@ -125,7 +125,7 @@ function getFlowDur(from, to) {
 // ============================================================================
 
 /** Renders a single component box (rect + labels + state badge) */
-function CompBox({ id, active, opacity, stateText, isHost }) {
+function CompBox({ id, active, opacity, stateText, isHost, isServer }) {
   const r = COMP_RECTS[id];
   const m = COMP_META[id];
   if (!r || !m) return null;
@@ -137,6 +137,9 @@ function CompBox({ id, active, opacity, stateText, isHost }) {
   const filter = active ? `url(#glow-${m.ck})` : 'none';
 
   const cx = r.x + r.w / 2;
+  // Server boxes: left-align labels to make room for tools on the right
+  const labelX = isServer ? r.x + 18 : cx;
+  const labelAnchor = isServer ? 'start' : 'middle';
   const labelY = isHost ? r.y + 16 : r.y + r.h / 2 - 6;
   const subY = isHost ? r.y + 30 : r.y + r.h / 2 + 10;
 
@@ -150,16 +153,16 @@ function CompBox({ id, active, opacity, stateText, isHost }) {
         style={{ transition: 'stroke-width 0.3s ease, filter 0.3s ease' }}
       />
       <text
-        x={cx} y={labelY}
-        textAnchor="middle" fill={color.text}
+        x={labelX} y={labelY}
+        textAnchor={labelAnchor} fill={color.text}
         fontSize={isHost ? 14 : 13} fontWeight="600"
         fontFamily="system-ui, -apple-system, sans-serif"
       >
         {m.label}
       </text>
       <text
-        x={cx} y={subY}
-        textAnchor="middle" fill={color.text}
+        x={labelX} y={subY}
+        textAnchor={labelAnchor} fill={color.text}
         fontSize={isHost ? 11 : 10} fontFamily="'Courier New', monospace"
         opacity={0.7}
       >
@@ -190,27 +193,30 @@ function CompBox({ id, active, opacity, stateText, isHost }) {
   );
 }
 
-/** Renders tool name badges on a server component */
+/** Renders tool name badges on a server component (right side) */
 function ToolBadges({ serverId, tools }) {
   const r = COMP_RECTS[serverId];
   if (!r || !tools || tools.length === 0) return null;
   const color = COLORS.server;
-  const cx = r.x + r.w / 2;
-  const startY = r.y + 72;
+  const dividerX = r.x + r.w * 0.45;
+  const toolX = dividerX + 14;
+  // Vertically center the tool list within the box
+  const totalHeight = (tools.length - 1) * 15;
+  const startY = r.y + r.h / 2 - totalHeight / 2 + 3;
 
   return (
     <g style={{ transition: 'opacity 0.5s ease' }}>
-      {/* Thin divider */}
+      {/* Vertical divider */}
       <line
-        x1={r.x + 15} y1={startY - 6}
-        x2={r.x + r.w - 15} y2={startY - 6}
+        x1={dividerX} y1={r.y + 15}
+        x2={dividerX} y2={r.y + r.h - 15}
         stroke={color.border} strokeWidth={0.5} opacity={0.3}
       />
       {tools.map((tool, i) => (
         <text
           key={tool}
-          x={cx} y={startY + i * 15}
-          textAnchor="middle" fill={color.text}
+          x={toolX} y={startY + i * 15}
+          textAnchor="start" fill={color.text}
           fontSize={9} fontFamily="'Courier New', monospace"
           opacity={0.65}
         >
@@ -343,7 +349,7 @@ export default function ArchitectureDiagram({
       border: '1px solid rgba(255,255,255,0.06)',
     }}>
       <svg
-        viewBox="0 0 960 580"
+        viewBox="0 10 1155 441"
         style={{ width: '100%', height: 'auto', display: 'block' }}
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -387,12 +393,12 @@ export default function ArchitectureDiagram({
         {/* ============================================================ */}
         {/* BACKGROUND                                                   */}
         {/* ============================================================ */}
-        <rect x="0" y="0" width="960" height="580" fill="#1a1a2e" />
+        <rect x="0" y="10" width="1155" height="441" fill="#1a1a2e" />
 
         {/* Subtle dot grid */}
         <g opacity="0.08">
-          {Array.from({ length: 24 }, (_, i) =>
-            Array.from({ length: 15 }, (_, j) => (
+          {Array.from({ length: 28 }, (_, i) =>
+            Array.from({ length: 11 }, (_, j) => (
               <circle
                 key={`dot-${i}-${j}`}
                 cx={i * 40 + 20} cy={j * 40 + 10}
@@ -410,18 +416,15 @@ export default function ArchitectureDiagram({
           transition: 'opacity 0.3s ease',
         }}>
           <line
-            x1="30" y1="358" x2="590" y2="358"
+            x1="680" y1="40" x2="680" y2="390"
             stroke={COLORS.transport.border} strokeWidth="1.5"
             strokeDasharray="8 4"
           />
-          <rect x="230" y="349" width="160" height="18" rx="9"
-            fill="#1a1a2e" stroke={COLORS.transport.border}
-            strokeWidth="0.8" opacity="0.9"
-          />
           <text
-            x="310" y="362"
+            x="680" y="215"
             textAnchor="middle" fill={COLORS.transport.text}
             fontSize="10" fontFamily="'Courier New', monospace"
+            transform="rotate(-90, 680, 215)"
           >
             Transport Layer (stdio)
           </text>
@@ -485,6 +488,7 @@ export default function ArchitectureDiagram({
             opacity={getOpacity(id)}
             stateText={getState(id)}
             isHost={false}
+            isServer={id === C.SERVER_FILES || id === C.SERVER_UTILS}
           />
         ))}
 
@@ -505,13 +509,14 @@ export default function ArchitectureDiagram({
         {/* ============================================================ */}
         {/* "Inside Host" / "External" zone labels                       */}
         {/* ============================================================ */}
-        <text x="35" y="340" fill={COLORS.host.text} fontSize="9"
-          fontFamily="'Courier New', monospace" opacity="0.35">
-          &#9650; inside host process
+        <text x="640" y="403" fill={COLORS.host.text} fontSize="9"
+          fontFamily="'Courier New', monospace" opacity="0.35"
+          textAnchor="end">
+          &#9668; inside host process
         </text>
-        <text x="35" y="390" fill={COLORS.server.text} fontSize="9"
+        <text x="720" y="403" fill={COLORS.server.text} fontSize="9"
           fontFamily="'Courier New', monospace" opacity="0.35">
-          &#9660; external server processes
+          external server processes &#9658;
         </text>
 
         {/* ============================================================ */}
@@ -524,7 +529,7 @@ export default function ArchitectureDiagram({
         {/* ============================================================ */}
         {/* LEGEND (bottom-right)                                        */}
         {/* ============================================================ */}
-        <g transform="translate(660, 420)" opacity="0.5">
+        <g transform="translate(980, 55)" opacity="0.5">
           <text x="0" y="0" fill="#9ca3af" fontSize="10" fontWeight="600"
             fontFamily="system-ui, sans-serif">
             Message Types
