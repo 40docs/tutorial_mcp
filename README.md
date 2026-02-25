@@ -8,13 +8,6 @@ Open `index.html` in any modern browser. That's it — no install, no build step
 
 > The file loads React, Babel, and Tailwind from CDN, so you need an internet connection on first load.
 
-For local development with live reload, serve the directory:
-
-```bash
-python3 -m http.server 5000
-# Open http://localhost:5000
-```
-
 ## What You'll See
 
 The demo walks through **4 acts**:
@@ -48,24 +41,8 @@ Each step shows:
 
 ```
 index.html              # Self-contained demo (open directly in browser)
-build.py                # Assembles index.html from source components
-src/
-  simulation-engine.jsx # State machine, step sequences, all MCP/API data
-  architecture-diagram.jsx # SVG animated diagram component
-  message-inspector.jsx # JSON inspector, message log, config viewer
-  chat-narrator.jsx     # Chat panel, step narrator, act transitions
-  app-shell.jsx         # App layout, context, keyboard shortcuts, landing page
+prompts/                # Planning and architecture docs used to build the demo
 ```
-
-## Rebuilding from Source
-
-The source components in `src/` are assembled into a single `index.html` by the build script:
-
-```bash
-python3 build.py
-```
-
-This strips ES module syntax, deduplicates shared constants, and wraps everything in an HTML template with CDN dependencies.
 
 ## Tech Stack
 

@@ -11,6 +11,3 @@ Thumbs.db
 
 # Environment
 .env
-
-# Internal build specs
-MCP-Architecture-Deep-Dive.md
