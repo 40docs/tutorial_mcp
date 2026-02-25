@@ -51,6 +51,10 @@ prompts/                # Planning and architecture docs used to build the demo
 - **Tailwind CSS** — utility styles (CDN)
 - **Zero dependencies** — no npm, no node_modules, no bundler
 
+## Disclaimer
+
+This is an **educational demo** designed to illustrate how MCP works at a conceptual level. The JSON payloads, API messages, and protocol exchanges shown are simplified representations meant to teach the flow and architecture — not to serve as exact protocol references. Do not treat the specific payload contents as authoritative specifications.
+
 ## License
 
 MIT
